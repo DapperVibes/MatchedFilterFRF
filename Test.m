@@ -21,6 +21,7 @@ s = daq.createSession('ni');
 
 % Add input channel
 chi0 = addAnalogInputChannel(s,'Dev3',0, 'Voltage');
+chi1 = addAnalogInputChannel(s,'Dev3',2, 'Voltage');
 cho0 = addAnalogOutputChannel(s,'Dev3',0,'Voltage');
 
 % Specify sampling frequency
@@ -29,7 +30,7 @@ s.Rate = fs;
 %% Run FRF Code
 
 [FRF,fVecFRF] =...
-    MatchedFilterFRF(fs,f1,f2,TSweep,TTotal,s);
+    MatchedFilterFRF(fs,f1,f2,TSweep,TTotal,s,2);
 
 
 %% Figures

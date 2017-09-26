@@ -1,4 +1,4 @@
-function [FRF,fVecFRF] = MatchedFilterFRF(fs,f1,f2,TSweep,TTotal,DAQ)
+function [FRF,fVecFRF] = MatchedFilterFRF(fs,f1,f2,TSweep,TTotal,DAQ,type)
 %MatchedFilterFRF - Controls DAQ hardware to send a matched filter sweep
 %and computes the Frequency Response Function of the return signal
 %
@@ -11,6 +11,8 @@ function [FRF,fVecFRF] = MatchedFilterFRF(fs,f1,f2,TSweep,TTotal,DAQ)
 %    TSweep - Duration of sweep [s]
 %    TTotal - Total time for aquisition from start of sweep [s]
 %    DAQ    - Handle for NI DAQ device with 1 input and 2 output channels
+%    type   - Type of FRF, '1' - Compare DAQ Ch 1 against ideal signal
+%                          '2' - Compare DAQ Ch 2 to DAQ Ch 1
 %
 % Outputs:
 %    FRF    - Frequency response function [Ratio]
@@ -72,7 +74,7 @@ function [FRF,fVecFRF] = MatchedFilterFRF(fs,f1,f2,TSweep,TTotal,DAQ)
 % University of Southampton
 % email: C.N.Dolder@soton.ac.uk
 % Website: https://github.com/DapperVibes
-% Aug 2019; Last revision: 15-Aug-2017
+% Aug 2019; Last revision: 26-Aug-2017
 
 % Feature steps:
 % Complete:
@@ -83,8 +85,9 @@ function [FRF,fVecFRF] = MatchedFilterFRF(fs,f1,f2,TSweep,TTotal,DAQ)
 %  - Generate an artificial echo
 %  - Calculate the FRF and return
 %  - Send the chip via DAQ and calculate FRF of real return
-% To do:
 %  - Take two signals in and compute FRF between them
+% To do:
+%  - Create an ensemble average with a coherence.
 
 %------------- BEGIN CODE --------------
 
@@ -113,7 +116,16 @@ Ref = ifft(fft(signal(:),length(signal)).*fft(invsignal(:),length(signal)));
 
 queueOutputData(DAQ,signal(:));
 
-echo = DAQ.startForeground;
+data = DAQ.startForeground;
+
+if type == 1
+    echo = data(:,1);
+elseif type == 2
+    echo = data(:,2);
+    signal = data(:,1);
+else
+    disp('Incorrect entry of type parameter, please choose either 1 or 2');
+end
 
 %% Impulse response of echo when match filtered
 
